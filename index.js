@@ -29,12 +29,16 @@ function initApplication(settings) {
 			var display = new Display;
 
 			/* Initializing window */
+			window.title = 'Juice Panel';
+			window.windowType = toolkit.WINDOW_TYPE_DOCK;
+			window.hasDecorator = false;
 			window.useAlpha(true);
 			window.opacity = 255;
 			window.setColor(0, 0, 0, 255);
 			window.width = display.getScreenWidth();
 			window.height = 26;
-			window.title = 'Juice Panel';
+			window.x = 0;
+			window.y = 0;
 			window.show();
 
 			/* Initializing Layout */
