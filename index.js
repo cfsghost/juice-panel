@@ -4,14 +4,19 @@ var Display = require('jsdx-display');
 var Config = require('./lib/config');
 var Plugin = require('./lib/plugin');
 
+/* Global variable */
+var application = null;
+
 /* Read config file */
 var config = new Config;
 config.init(function(err, settings) {
 
-	initApplication(settings);
+	initApplication(settings, function(err, app) {
+		application = app;
+	});
 });
 
-function initApplication(settings) {
+function initApplication(settings, callback) {
 
 	/* Initializing Plugins */
 	var plugin = new Plugin;
@@ -19,6 +24,7 @@ function initApplication(settings) {
 
 		/* Initializing application */
 		var app = new toolkit.Application('Juice Panel');
+		app.curPlugins = [];
 
 		app.createWindow(function(window) {
 			window.on(toolkit.EVENT_DESTROY, function() {
@@ -42,10 +48,15 @@ function initApplication(settings) {
 			window.show();
 
 			/* Initializing Layout */
-			var layout = new toolkit.Widget.BoxLayout;
-			layout.orientation = toolkit.Widget.ORIENTATION_VERTICAL;
-			layout.show();
+			var layout = new toolkit.Group;
 			window.add(layout);
+
+			var rightBox = new toolkit.Widget.BoxLayout;
+			rightBox.orientation = toolkit.Widget.ORIENTATION_HORIZONTAL;
+			rightBox.setAnchorFromGravity(toolkit.GRAVITY_EAST);
+			rightBox.x = window.width;
+			rightBox.y = window.height * 0.5;
+			layout.add(rightBox);
 
 			if (settings == null)
 				return;
@@ -54,18 +65,41 @@ function initApplication(settings) {
 			if ('plugins' in settings) {
 
 				for (var index in settings.plugins) {
-					var id = settings.plugins[index].id
-					var p = plugin.initPlugin(id);
+					var pluginConf = settings.plugins[index];
+					var module = pluginConf.module
+					var frame = new toolkit.Widget.Frame;
 
-					var w = p.init();
-					layout.add(w);
+					/* Alignment */
+					if ("align" in pluginConf) {
 
-					w.show();
+						if (pluginConf.align == 'center') {
+
+							frame.setAnchorFromGravity(toolkit.GRAVITY_CENTER);
+							frame.x = window.width * 0.5;
+							frame.y = window.height * 0.5;
+							layout.add(frame);
+
+						}
+					} else {
+						rightBox.add(frame);
+					}
+
+
+					/* Initializing plugin */
+					var p = plugin.initPlugin(module);
+					var w = p.init(pluginConf);
+
+					frame.add(w);
+
+					/* Append to list */
+					app.curPlugins.push(p);
 				}
 			}
 			
 		});
 
 		app.run();
+
+		callback(null, app);
 	});
 }

@@ -1,7 +1,16 @@
 {
 	"plugins": [
 		{
-			"id": "clock"
+			"module": "clock",
+			"align": "center"
+		},
+		{
+			"module": "image",
+			"filename": "data/test.png"
+		},
+		{
+			"module": "image",
+			"filename": "data/test.png"
 		}
 	]
 }
