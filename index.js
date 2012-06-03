@@ -24,6 +24,7 @@ function initApplication(settings, callback) {
 
 		/* Initializing application */
 		var app = new toolkit.Application('Juice Panel');
+		app.loadStyleFile(__dirname + '/data/default.css');
 		app.curPlugins = [];
 
 		app.createWindow(function(window) {
