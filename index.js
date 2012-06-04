@@ -27,6 +27,28 @@ function initApplication(settings, callback) {
 		app.loadStyleFile(__dirname + '/data/default.css');
 		app.curPlugins = [];
 
+		/* Initailizing desktop window */
+		app.createWindow(function(window) {
+			window.on(toolkit.EVENT_DESTROY, function() {
+				app.quit();
+			});
+
+			/* Display */
+			var display = new Display;
+
+			/* Initializing window */
+			window.title = 'Juice Desktop';
+			window.windowType = toolkit.WINDOW_TYPE_DESKTOP;
+			window.hasDecorator = false;
+			window.setColor(0, 0, 0, 255);
+			window.width = display.getScreenWidth();
+			window.height = display.getScreenHeight();
+			window.x = 0;
+			window.y = 0;
+			window.show();
+		});
+
+		/* Initailizing panel */
 		app.createWindow(function(window) {
 			window.on(toolkit.EVENT_DESTROY, function() {
 				app.quit();
