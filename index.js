@@ -148,7 +148,7 @@ function initApplication(settings, callback) {
 
 					/* Initializing plugin */
 					var p = plugin.initPlugin(module);
-					var w = p.init(pluginConf);
+					var w = p.init(app, pluginConf);
 
 					frame.add(w);
 

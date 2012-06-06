@@ -5,7 +5,7 @@ var Image = function() {
 	this.filename = null;
 };
 
-Image.prototype.init = function(settings) {
+Image.prototype.init = function(app, settings) {
 	var self = this;
 
 	this.widget = new toolkit.Widget.Image;

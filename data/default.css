@@ -2,3 +2,11 @@ MxLabel {
 	color: white;
 	font-size: 14px;
 }
+
+*.menu-item {
+	padding: 5px;
+}
+
+*.menu-item:hover {
+	background-color: #ffffff33;
+}

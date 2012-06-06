@@ -6,7 +6,7 @@ var Clock = function() {
 	this.timeoutID = null;
 };
 
-Clock.prototype.init = function(settings) {
+Clock.prototype.init = function(app, settings) {
 	var self = this;
 
 	this.widget = new toolkit.Widget.Label();

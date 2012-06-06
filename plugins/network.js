@@ -2,16 +2,25 @@ var toolkit = require('jsdx-toolkit');
 var ConnMan = require('jsdx-connman');
 
 var Network = function() {
+	this.app = null;
 	this.connman = new ConnMan;
 	this.widget = null;
 	this.spinner = null;
+	this.menu = {
+		window: null,
+		title: null,
+		list: null,
+		services: []
+	};
 	this.technologies = [];
 	this.statusIcon = null;
 	this.currentService = null;
 };
 
-Network.prototype.init = function(settings) {
+Network.prototype.init = function(app, settings) {
 	var self = this;
+
+	self.app = app;
 
 	this.widget = new toolkit.Widget.BoxLayout;
 	this.widget.orientation = toolkit.Widget.ORIENTATION_HORIZONTAL;
@@ -43,13 +52,18 @@ Network.prototype.init = function(settings) {
 					self.useWired();
 				}
 
+				/* Event binding */
+				self.statusIcon.reactive = true;
+				self.statusIcon.on(toolkit.EVENT_CLICK, function() {
+					self.onClick();
+				});
+
 				self.widget.add(self.statusIcon);
 			}
 		}
 
 		/* Monitor connection state */
 		self.connman.onPropertyChanged(function(name, value) {
-			console.log(name, value);
 
 			if (name == 'State') {
 
@@ -78,10 +92,6 @@ Network.prototype.init = function(settings) {
 				}
 			}
 		});
-
-		/* Monitor Signal Strength */
-		setInterval(function() {
-		}, 30000);
 
 		self.connman.onOnlineServiceChanged(function(name, value) {
 
@@ -186,16 +196,7 @@ Network.prototype.updateStatus = function() {
 	case 'wifi':
 
 		/* Get Strength to update icon */
-		if (self.currentService[1].Strength > 80)
-			self.statusIcon.loadFile(__dirname + '/../data/nm-signal-100.png', updateIcon);
-		else if (self.currentService[1].Strength > 60)
-			self.statusIcon.loadFile(__dirname + '/../data/nm-signal-75.png', updateIcon);
-		else if (self.currentService[1].Strength > 40)
-			self.statusIcon.loadFile(__dirname + '/../data/nm-signal-50.png', updateIcon);
-		else if (self.currentService[1].Strength > 20)
-			self.statusIcon.loadFile(__dirname + '/../data/nm-signal-25.png', updateIcon);
-		else
-			self.statusIcon.loadFile(__dirname + '/../data/nm-signal-00.png', updateIcon);
+		Network.updateStrength(self.statusIcon, self.currentService[1].Strength, updateIcon);
 
 		break;
 
@@ -218,6 +219,109 @@ Network.prototype.setSpinner = function(enabled) {
 		self.spinner.hide();
 		self.statusIcon.show();
 	}
+};
+
+Network.prototype.onClick = function() {
+	var self = this;
+
+	function updateMenu(layout) {
+
+		/* Clear */
+		for (var index in self.menu.services) {
+			self.menu.services[index].destroy();
+		}
+		self.menu.services = [];
+
+		/* Scan and get access point list */
+		self.connman.Wifi.Scan(function() {
+			self.connman.Wifi.ListAPs(function(list) {
+
+				for (var index in list) {
+					var ap = list[index];
+
+					var box = new toolkit.Widget.BoxLayout;
+					box.orientation = toolkit.Widget.ORIENTATION_HORIZONTAL;
+					box.width = self.menu.window.width;
+//					box.height = 48;
+					box.className = 'menu-item';
+					box.reactive = true;
+					
+					var strength = new toolkit.Widget.Image;
+					Network.updateStrength(strength, ap.Strength);
+					box.add(strength);
+
+					var ssid = new toolkit.Widget.Label();
+					if (ap.Name)
+						ssid.text = ap.Name;
+					else
+						ssid.text = '* Hidden *';
+					
+//					ssid.x = 32;
+					box.add(ssid);
+
+					if (ap.Security != 'none') {
+						var security = new toolkit.Widget.Image;
+						security.loadFile(__dirname + '/../data/locked.png');
+//						security.setAnchorFromGravity(toolkit.GRAVITY_NORTH_EAST);
+//						security.x = box.width;
+						box.add(security);
+					}
+
+					layout.add(box);
+
+					self.menu.services.push(box);
+				}
+			});
+		});
+	}
+
+	/* Initailizing menu window */
+	if (self.menu.window) {
+		if (self.menu.window.isVisible()) {
+			self.menu.window.hide();
+		} else {
+			updateMenu(self.menu.list);
+
+			self.menu.window.show();
+		}
+	} else {
+		self.app.createWindow(function(window) {
+			self.menu.window = window;
+
+			window.windowType = toolkit.WINDOW_TYPE_POPUP_MENU;
+			window.hasDecorator = false;
+			window.setColor(2, 17, 18, 255);
+			window.width = 240;
+			window.height = 320;
+			window.show();
+
+			/* Initializing layout */
+			self.menu.list = new toolkit.Widget.BoxLayout;
+			window.add(self.menu.list);
+
+			self.menu.title = new toolkit.Widget.Label('Available Wifi Access Points:');
+			self.menu.list.add(self.menu.title);
+
+			updateMenu(self.menu.list);
+		});
+	}
+	
+};
+
+/* Internal Functions */
+Network.updateStrength = function(widget, strength, callback) {
+
+	/* Get Strength to update icon */
+	if (strength > 80)
+		widget.loadFile(__dirname + '/../data/nm-signal-100.png', callback);
+	else if (strength > 60)
+		widget.loadFile(__dirname + '/../data/nm-signal-75.png', callback);
+	else if (strength > 40)
+		widget.loadFile(__dirname + '/../data/nm-signal-50.png', callback);
+	else if (strength > 20)
+		widget.loadFile(__dirname + '/../data/nm-signal-25.png', callback);
+	else
+		widget.loadFile(__dirname + '/../data/nm-signal-00.png', callback);
 };
 
 module.exports = {
