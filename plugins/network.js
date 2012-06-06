@@ -91,8 +91,6 @@ Network.prototype.init = function(settings) {
 				self.currentService[1][name] == value
 
 				self.updateStatus();
-
-				console.log(name, value);
 			}
 		});
 
