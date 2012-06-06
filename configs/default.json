@@ -6,11 +6,11 @@
 		},
 		{
 			"module": "image",
-			"filename": "data/test.png"
+			"filename": "data/audio-volume-high.png"
 		},
 		{
-			"module": "image",
-			"filename": "data/test.png"
+			"module": "network",
+			"align": "left"
 		}
 	]
 }

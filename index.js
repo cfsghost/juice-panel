@@ -101,6 +101,15 @@ function initApplication(settings, callback) {
 			var layout = new toolkit.Group;
 			window.add(layout);
 
+			/* Left-side container */
+			var leftBox = new toolkit.Widget.BoxLayout;
+			leftBox.orientation = toolkit.Widget.ORIENTATION_HORIZONTAL;
+			leftBox.setAnchorFromGravity(toolkit.GRAVITY_WEST);
+			leftBox.x = 0;
+			leftBox.y = 0;
+			layout.add(leftBox);
+
+			/* Right-side container */
 			var rightBox = new toolkit.Widget.BoxLayout;
 			rightBox.orientation = toolkit.Widget.ORIENTATION_HORIZONTAL;
 			rightBox.setAnchorFromGravity(toolkit.GRAVITY_EAST);
@@ -129,6 +138,8 @@ function initApplication(settings, callback) {
 							frame.y = window.height * 0.5;
 							layout.add(frame);
 
+						} else if (pluginConf.align == 'left') {
+							leftBox.add(frame);
 						}
 					} else {
 						rightBox.add(frame);
