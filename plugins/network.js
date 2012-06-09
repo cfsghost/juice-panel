@@ -68,7 +68,7 @@ Network.prototype.init = function(app, settings) {
 			if (name == 'State') {
 
 				switch(value) {
-				case 'online':
+				case 'ready':
 					self.connman.GetOnlineService(function(err, service) {
 
 						/* Update Status */
@@ -245,6 +245,22 @@ Network.prototype.onClick = function() {
 //					box.height = 48;
 					box.className = 'menu-item';
 					box.reactive = true;
+
+					var used = new toolkit.Widget.Image;
+					if (self.currentService[0] == ap.dbusObject) {
+						used.loadFile(__dirname + '/../data/used.png');
+					}
+					used.width = 24;
+					used.height = 24;
+					box.add(used);
+
+					var security = new toolkit.Widget.Image;
+					if (ap.Security != 'none') {
+						security.loadFile(__dirname + '/../data/locked.png');
+					}
+					security.width = 24;
+					security.height = 24;
+					box.add(security);
 					
 					var strength = new toolkit.Widget.Image;
 					Network.updateStrength(strength, ap.Strength);
@@ -256,16 +272,7 @@ Network.prototype.onClick = function() {
 					else
 						ssid.text = '* Hidden *';
 					
-//					ssid.x = 32;
 					box.add(ssid);
-
-					if (ap.Security != 'none') {
-						var security = new toolkit.Widget.Image;
-						security.loadFile(__dirname + '/../data/locked.png');
-//						security.setAnchorFromGravity(toolkit.GRAVITY_NORTH_EAST);
-//						security.x = box.width;
-						box.add(security);
-					}
 
 					layout.add(box);
 

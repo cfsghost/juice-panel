@@ -87,6 +87,7 @@ function initApplication(settings, callback) {
 			/* Initializing window */
 			window.title = 'Juice Panel';
 			window.id = 'panel';
+			window.className = 'panel';
 			window.windowType = toolkit.WINDOW_TYPE_DOCK;
 			window.hasDecorator = false;
 			window.useAlpha(true);
