@@ -209,7 +209,9 @@ Network.prototype.onClick = function() {
 
 				for (var index in list) {
 					var ap = list[index];
-					var isUsed = (self.currentService[0] == ap.dbusObject) ? true : false;
+					var isUsed = false;
+					if (self.currentService)
+						isUsed = (self.currentService[0] == ap.dbusObject) ? true : false;
 
 					var box = new toolkit.Widget.BoxLayout;
 					box.orientation = toolkit.Widget.ORIENTATION_HORIZONTAL;
