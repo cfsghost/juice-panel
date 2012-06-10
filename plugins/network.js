@@ -77,6 +77,7 @@ Network.prototype.init = function(app, settings) {
 			if (name == 'State') {
 
 				switch(value) {
+				case 'ready':
 				case 'online':
 					self.connman.GetOnlineService(function(err, service) {
 
