@@ -10,3 +10,7 @@ MxLabel {
 *.menu-item:hover {
 	background-color: #ffffff33;
 }
+
+*.network-used {
+	color: #33eecc;
+}

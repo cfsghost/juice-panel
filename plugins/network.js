@@ -34,8 +34,18 @@ Network.prototype.init = function(app, settings) {
 	/* Initializing connection manager */
 	this.connman.init(function() {
 
+		/* Create icons */
+		self.statusIcon = new toolkit.Widget.Image;
+
+		/* Event binding */
+		self.statusIcon.reactive = true;
+		self.statusIcon.on(toolkit.EVENT_CLICK, function() {
+			self.onClick();
+		});
+
 		/* Get all technologies */
 		var techs = self.connman.GetTechnologies();
+		var isConnected = false;
 		for (var index in techs) {
 			var technology = techs[index][1];
 			technology.path = techs[index][0];
@@ -43,24 +53,23 @@ Network.prototype.init = function(app, settings) {
 			self.technologies.push(technology);
 
 			if (technology.Connected) {
-				/* Create icons */
-				self.statusIcon = new toolkit.Widget.Image;
+
+				isConnected = true;
 
 				if (technology.Type == 'wifi') {
 					self.useWifi();
 				} else if (technology.Type == 'ethernet') {
 					self.useWired();
 				}
-
-				/* Event binding */
-				self.statusIcon.reactive = true;
-				self.statusIcon.on(toolkit.EVENT_CLICK, function() {
-					self.onClick();
-				});
-
-				self.widget.add(self.statusIcon);
 			}
 		}
+
+		/* We have devices but connection is still not created */
+		if (!isConnected && self.technologies.length > 0) {
+			self.updateStatus();
+		}
+
+		self.widget.add(self.statusIcon);
 
 		/* Monitor connection state */
 		self.connman.onPropertyChanged(function(name, value) {
@@ -104,44 +113,6 @@ Network.prototype.init = function(app, settings) {
 			}
 		});
 
-		/* Monitor services */
-//		self.connman.onServicesChanged(function(services, removed) {
-
-//			if (self.currentService) {
-//				console.log(services);
-
-				/* Get connection which we are using currently */
-//				for (var index in services) {
-					/* Workaround: DBus module has a problem that return empty array rather than empty object */
-//					if (services[index][1] instanceof Array) {
-						/* No update */
-//						continue;
-//					}
-
-//					if (services[index][1].State == 'online') {
-
-						/* Switch to new service */
-//						if (services[index][0] != self.currentService[0]) {
-//							self.currentService = services[index];
-//							self.updateStatus();
-
-//							break;
-//						}
-
-						/* Update current service status */
-//						self.currentService = services[index];
-//						self.updateStatus();
-
-//						if (self.currentService[1].Type == 'wifi')
-//							console.log(self.currentService[1].Name, self.currentService[1].Strength);
-
-//						break;
-//					}
-
-//				}
-//			}
-
-//		});
 	});
 
 	return this.widget;
@@ -238,6 +209,7 @@ Network.prototype.onClick = function() {
 
 				for (var index in list) {
 					var ap = list[index];
+					var isUsed = (self.currentService[0] == ap.dbusObject) ? true : false;
 
 					var box = new toolkit.Widget.BoxLayout;
 					box.orientation = toolkit.Widget.ORIENTATION_HORIZONTAL;
@@ -247,7 +219,7 @@ Network.prototype.onClick = function() {
 					box.reactive = true;
 
 					var used = new toolkit.Widget.Image;
-					if (self.currentService[0] == ap.dbusObject) {
+					if (isUsed) {
 						used.loadFile(__dirname + '/../data/used.png');
 					}
 					used.width = 24;
@@ -267,6 +239,9 @@ Network.prototype.onClick = function() {
 					box.add(strength);
 
 					var ssid = new toolkit.Widget.Label();
+					if (isUsed)
+						ssid.className = 'network-used';
+
 					if (ap.Name)
 						ssid.text = ap.Name;
 					else
