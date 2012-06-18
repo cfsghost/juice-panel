@@ -4,6 +4,9 @@ var Display = require('jsdx-display');
 var Config = require('./lib/config');
 var Plugin = require('./lib/plugin');
 
+/* Initializing */
+//toolkit.useARGB(true);
+
 /* Global variable */
 var application = null;
 
@@ -90,7 +93,7 @@ function initApplication(settings, callback) {
 			window.className = 'panel';
 			window.windowType = toolkit.WINDOW_TYPE_DOCK;
 			window.hasDecorator = false;
-			window.useAlpha(true);
+			window.useAlpha = true;
 			window.opacity = 255;
 			window.setColor(0, 0, 0, 255);
 			window.width = display.getScreenWidth();

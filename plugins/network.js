@@ -1,16 +1,25 @@
 var toolkit = require('jsdx-toolkit');
 var ConnMan = require('jsdx-connman');
+var Display = require('jsdx-display');
 
 var Network = function() {
 	this.app = null;
 	this.connman = new ConnMan;
+	this.display = new Display;
 	this.widget = null;
 	this.spinner = null;
 	this.menu = {
 		window: null,
+		layout: null,
 		title: null,
 		list: null,
-		services: []
+		services: [],
+		security: {
+			layout: null,
+			passphrase_layout: null,
+			passphrase_label: null,
+			passphrase_entry: null
+		}
 	};
 	this.technologies = [];
 	this.statusIcon = null;
@@ -123,6 +132,49 @@ Network.prototype.uninit = function() {
 	var self = this;
 };
 
+Network.prototype.configureWifi = function() {
+	var self = this;
+
+	self.connman.Agent.on('Release', function() {
+		console.log('Release');
+	});
+
+	self.connman.Agent.on('ReportError', function(path, err) {
+		console.log('ReportError:');
+		console.log(err);
+		/* invalid-key */
+	});
+
+	self.connman.Agent.on('RequestBrowser', function(path, url) {
+		console.log('RequestBrowser');
+	});
+
+	/* Initializing Agent for connectiing access point */
+	self.connman.Agent.on('RequestInput', function(path, dict) {
+		console.log(dict);
+
+		/* Peixin */
+		return { 'Passphrase': '12345' };
+
+/*
+		if ('Passphrase' in dict) {
+			if ('WPS' in dict) {
+				console.log('WPS');
+				return { 'WPS': '08152268' };
+			} else {
+				return { 'Passphrase': 'CPBAE187' };
+			}
+		}
+*/
+	});
+
+	self.connman.Agent.on('Cancel', function() {
+		console.log('Cancel');
+	});
+
+	self.connman.Agent.run();
+};
+
 Network.prototype.useWifi = function() {
 	var self = this;
 
@@ -221,6 +273,14 @@ Network.prototype.onClick = function() {
 					box.className = 'menu-item';
 					box.reactive = true;
 
+					/* Click */
+					(function(ap) {
+						box.on(toolkit.EVENT_CLICK, function() {
+							self.connectAccessPoint(ap);
+							self.menu.window.hide();
+						});
+					}) (ap);
+
 					var used = new toolkit.Widget.Image;
 					if (isUsed) {
 						used.loadFile(__dirname + '/../data/used.png');
@@ -267,15 +327,19 @@ Network.prototype.onClick = function() {
 		} else {
 			updateMenu(self.menu.list);
 
+			self.menu.window.width = 240;
+			self.menu.window.height = 320;
 			self.menu.window.show();
 		}
 	} else {
+
 		self.app.createWindow(function(window) {
 			self.menu.window = window;
 
 			window.windowType = toolkit.WINDOW_TYPE_POPUP_MENU;
-			window.hasDecorator = false;
-			window.setColor(2, 17, 18, 255);
+//			window.hasDecorator = false;
+			window.setColor(2, 17, 18, 100);
+			window.useAlpha = false;
 			window.x = 0;
 			window.y = self.app.getWidgetById('panel').height;
 			window.width = 240;
@@ -283,16 +347,75 @@ Network.prototype.onClick = function() {
 			window.show();
 
 			/* Initializing layout */
+			self.menu.layout = new toolkit.Widget.BoxLayout;
+			self.menu.layout.orientation = toolkit.Widget.ORIENTATION_HORIZONTAL;
+			self.menu.layout.height = window.height;
+			window.add(self.menu.layout);
+
+			/* Access Point list */
 			self.menu.list = new toolkit.Widget.BoxLayout;
-			window.add(self.menu.list);
+//			self.menu.list.width = window.width;
+			self.menu.layout.add(self.menu.list);
 
 			self.menu.title = new toolkit.Widget.Label('Available Wifi Access Points:');
 			self.menu.list.add(self.menu.title);
 
 			updateMenu(self.menu.list);
+
+			return;
+
+			/* Advance details */
+			self.menu.security.layout = new toolkit.Widget.Frame;
+			self.menu.layout.add(self.menu.security.layout);
 		});
 	}
 	
+};
+
+Network.prototype.connectAccessPoint = function(ap) {
+	var self = this;
+
+	/* Connect to access pointer right now */
+	if (ap.Security == 'none') {
+		self.connman.Wifi.ConnectService(ap.dbusObject);
+		return;
+	}
+
+	/* Create dialog for security */
+	self.app.createWindow(function(window) {
+		window.title = 'Access Point Authorization';
+		window.setAnchorFromGravity(toolkit.GRAVITY_CENTER);
+		window.width = 480;
+		window.height = 320;
+		window.x = (self.display.getScreenWidth() - window.width) * 0.5;
+		window.y = (self.display.getScreenHeight() - window.height) * 0.5;
+		window.show();
+
+		/* Container */
+		var frame = new toolkit.Widget.Frame;
+		frame.className = 'dialog';
+		window.add(frame);
+		
+		/* Input box */
+		var passphrase_layout = new toolkit.Widget.BoxLayout;
+		passphrase_layout.orientation = toolkit.Widget.ORIENTATION_HORIZONTAL;
+		frame.add(passphrase_layout);
+
+		var passphrase_label = new toolkit.Widget.Label('Passphrase:');
+		passphrase_label.className = 'network_passphrase_label';
+		passphrase_layout.add(passphrase_label);
+		passphrase_layout.setExpand(passphrase_label, true);
+
+		var passphrase_entry = new toolkit.Widget.Entry;
+		passphrase_entry.width = 200;
+		passphrase_layout.add(passphrase_entry);
+		passphrase_layout.setExpand(passphrase_entry, true);
+	});
+/*
+	self.menu.window.animate(toolkit.EASE_OUT_CUBIC, 600, {
+		'width': 640
+	});
+*/
 };
 
 /* Internal Functions */

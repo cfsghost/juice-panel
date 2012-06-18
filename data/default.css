@@ -14,3 +14,16 @@ MxLabel {
 *.network-used {
 	color: #33eecc;
 }
+
+*.dialog {
+	background-color: #000000;
+}
+
+MxEntry {
+	padding: 5;
+	font-size: 16px;
+}
+
+*.network_passphrase_label {
+	padding: 5;
+}
