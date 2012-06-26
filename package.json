@@ -29,6 +29,7 @@
 	"dependencies": {
 		"jsdx-toolkit": ">= 0.0.2",
 		"jsdx-display": ">= 0.0.1",
+		"jsdx-systray": ">= 0.0.1",
 		"dateformat": "*"
 	}
 	"main": "./index.js"

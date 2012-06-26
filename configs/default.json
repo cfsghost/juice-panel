@@ -9,6 +9,9 @@
 			"filename": "data/audio-volume-high.png"
 		},
 		{
+			"module": "systray"
+		},
+		{
 			"module": "network",
 			"align": "left"
 		}
