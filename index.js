@@ -95,7 +95,7 @@ function initApplication(settings, callback) {
 			window.hasDecorator = false;
 			window.useAlpha = true;
 			window.opacity = 255;
-			window.setColor(0, 0, 0, 255);
+			window.setColor(255, 0, 0, 255);
 			window.width = display.getScreenWidth();
 			window.height = 26;
 			window.x = 0;
@@ -164,8 +164,29 @@ function initApplication(settings, callback) {
 			
 		});
 
+		process.on('uncaughtException', function(err) {
+			console.err(err.stack);
+
+			uninitApplication();
+		});
+		process.on('SIGHUP', uninitApplication);
+		process.on('SIGINT', uninitApplication);
+
 		app.run();
 
 		callback(null, app);
 	});
+}
+
+function uninitApplication() {
+
+	/* Uninitializing plugins */
+	for (var index in application.curPlugins) {
+		var p = application.curPlugins[index];
+
+		if (p.uninit)
+			p.uninit();
+	}
+
+	process.exit(0);
 }
