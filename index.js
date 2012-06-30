@@ -188,5 +188,7 @@ function uninitApplication() {
 			p.uninit();
 	}
 
-	process.exit(0);
+	process.nextTick(function() {
+		process.exit(0);
+	});
 }

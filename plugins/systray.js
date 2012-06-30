@@ -34,8 +34,8 @@ Systray.prototype.init = function(app, settings) {
 
 		/* X11 Event */
 		var client = new toolkit.Texture(toolkit.TEXTURE_X11);
-		client.width = 25;
-		client.height = 25;
+		client.width = 26;
+		client.height = 26;
 		client.reactive = true;
 		client.hide();
 
@@ -87,6 +87,24 @@ Systray.prototype.init = function(app, settings) {
 };
 
 Systray.prototype.uninit = function() {
+	var self = this;
+
+	/* Clear clients list */
+	for (var w in self.clients) {
+		self.clients[w].setX11WindowAutoSync(false);
+	}
+	self.clients = {};
+
+	/* Release systray */
+	self.systray.releaseSelection();
+	self.systray = null;
+
+	/* Remove widgets */
+	self.widget.destroy();
+	self.widget = null;
+
+	/* Release */
+	self.app = null;
 };
 
 module.exports = {
