@@ -95,7 +95,7 @@ function initApplication(settings, callback) {
 			window.hasDecorator = false;
 			window.useAlpha = true;
 			window.opacity = 255;
-			window.setColor(255, 0, 0, 255);
+			window.setColor(0, 0, 0, 255);
 			window.width = display.getScreenWidth();
 			window.height = 26;
 			window.x = 0;
