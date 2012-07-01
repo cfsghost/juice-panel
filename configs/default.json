@@ -12,6 +12,9 @@
 			"module": "systray"
 		},
 		{
+			"module": "powerstatus"
+		},
+		{
 			"module": "network",
 			"align": "left"
 		}
