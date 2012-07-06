@@ -5,8 +5,7 @@
 			"align": "center"
 		},
 		{
-			"module": "image",
-			"filename": "data/audio-volume-high.png"
+			"module": "volume"
 		},
 		{
 			"module": "systray"
