@@ -15,6 +15,7 @@ var Volume = function() {
 	this.spinner = null;
 	this.icon = null;
 	this.soundman = new Soundman;
+	this.currentVolume = 0;
 };
 
 Volume.prototype.init = function(app, settings) {
@@ -44,6 +45,16 @@ Volume.prototype.init = function(app, settings) {
 		self.soundman.on('SinkNotify', function() {
 			self.updateStatus();
 		});
+
+		/* Binding input events */
+		self.icon.reactive = true;
+		self.icon.on(toolkit.EVENT_SCROLL, function(e, info) {
+			if (info.direction == toolkit.SCROLL_DIRECTION_UP) {
+				self.soundman.setVolume(self.currentVolume + 2);
+			} else {
+				self.soundman.setVolume(self.currentVolume - 2);
+			}
+		});
 	});
 
 	return this.widget;
@@ -58,12 +69,12 @@ Volume.prototype.updateStatus = function() {
 		return;
 	}
 
-	var volume = self.soundman.getVolume();
-	if (volume >= 75)
+	self.currentVolume = self.soundman.getVolume();
+	if (self.currentVolume >= 75)
 		self.updateIcon(IconType.HIGH);
-	else if (volume >= 50)
+	else if (self.currentVolume >= 50)
 		self.updateIcon(IconType.MEDIUM);
-	else if (volume > 0)
+	else if (self.currentVolume > 0)
 		self.updateIcon(IconType.LOW);
 	else
 		self.updateIcon(IconType.OFF);
