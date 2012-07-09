@@ -40,11 +40,11 @@ Systray.prototype.init = function(app, settings) {
 		client.hide();
 
 		/* Pass through input event */
-		client.on(toolkit.EVENT_PRESS, function(e, data) {
+		client.on('press', function(e, data) {
 			self.systray.sendEvent(w, self.systray.EVENT_BUTTON_PRESS, data);
 		});
 
-		client.on(toolkit.EVENT_RELEASE, function(e, data) {
+		client.on('release', function(e, data) {
 			self.systray.sendEvent(w, self.systray.EVENT_BUTTON_RELEASE, data);
 		});
 

@@ -48,7 +48,7 @@ Network.prototype.init = function(app, settings) {
 
 		/* Event binding */
 		self.statusIcon.reactive = true;
-		self.statusIcon.on(toolkit.EVENT_CLICK, function() {
+		self.statusIcon.on('click', function() {
 			self.onClick();
 		});
 
@@ -275,7 +275,7 @@ Network.prototype.onClick = function() {
 
 					/* Click */
 					(function(ap) {
-						box.on(toolkit.EVENT_CLICK, function() {
+						box.on('click', function() {
 							self.connectAccessPoint(ap);
 							self.menu.window.hide();
 						});

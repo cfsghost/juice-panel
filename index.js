@@ -32,7 +32,7 @@ function initApplication(settings, callback) {
 
 		/* Initailizing desktop window */
 		app.createWindow(function(window) {
-			window.on(toolkit.EVENT_DESTROY, function() {
+			window.on('destroy', function() {
 				app.quit();
 			});
 
@@ -80,7 +80,7 @@ function initApplication(settings, callback) {
 
 		/* Initailizing panel */
 		app.createWindow(function(window) {
-			window.on(toolkit.EVENT_DESTROY, function() {
+			window.on('destroy', function() {
 				app.quit();
 			});
 

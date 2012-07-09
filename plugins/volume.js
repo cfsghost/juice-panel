@@ -48,7 +48,7 @@ Volume.prototype.init = function(app, settings) {
 
 		/* Binding input events */
 		self.icon.reactive = true;
-		self.icon.on(toolkit.EVENT_SCROLL, function(e, info) {
+		self.icon.on('scroll', function(e, info) {
 			if (info.direction == toolkit.SCROLL_DIRECTION_UP) {
 				self.soundman.setVolume(self.currentVolume + 2);
 			} else {
