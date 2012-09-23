@@ -29,6 +29,7 @@ function initApplication(settings, callback) {
 		var app = new toolkit.Application('Juice Panel');
 		app.loadStyleFile(__dirname + '/data/default.css');
 		app.curPlugins = [];
+		app.run();
 
 		/* Initailizing desktop window */
 		app.createWindow(function(window) {
@@ -55,7 +56,7 @@ function initApplication(settings, callback) {
 			window.add(layout);
 
 			/* Logo */
-			var logo = new toolkit.Text('JUICE');
+			var logo = new toolkit.Text('糟糕圖');
 			logo.setFontName('Droid Sans 72');
 			logo.setColor(255, 255, 255, 255);
 			logo.setAnchorFromGravity(toolkit.GRAVITY_CENTER);
@@ -150,9 +151,9 @@ function initApplication(settings, callback) {
 						rightBox.add(frame);
 					}
 
-
 					/* Initializing plugin */
 					var p = plugin.initPlugin(module);
+
 					var w = p.init(app, pluginConf);
 
 					frame.add(w);
@@ -171,8 +172,6 @@ function initApplication(settings, callback) {
 		});
 		process.on('SIGHUP', uninitApplication);
 		process.on('SIGINT', uninitApplication);
-
-		app.run();
 
 		callback(null, app);
 	});
