@@ -411,11 +411,6 @@ Network.prototype.connectAccessPoint = function(ap) {
 		passphrase_layout.add(passphrase_entry);
 		passphrase_layout.setExpand(passphrase_entry, true);
 	});
-/*
-	self.menu.window.animate(toolkit.EASE_OUT_CUBIC, 600, {
-		'width': 640
-	});
-*/
 };
 
 /* Internal Functions */

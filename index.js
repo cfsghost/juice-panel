@@ -2,6 +2,7 @@ var toolkit = require('jsdx-toolkit');
 var Display = require('jsdx-display');
 
 var Config = require('./lib/config');
+var Desktop = require('./lib/desktop');
 var Plugin = require('./lib/plugin');
 
 /* Initializing */
@@ -31,52 +32,10 @@ function initApplication(settings, callback) {
 		app.curPlugins = [];
 		app.run();
 
-		/* Initailizing desktop window */
-		app.createWindow(function(window) {
-			window.on('destroy', function() {
-				app.quit();
-			});
-
-			/* Display */
-			var display = new Display;
-
-			/* Initializing window */
-			window.title = 'Juice Desktop';
-			window.windowType = toolkit.WINDOW_TYPE_DESKTOP;
-			window.hasDecorator = false;
-			window.setColor(0, 0, 0, 255);
-			window.width = display.getScreenWidth();
-			window.height = display.getScreenHeight();
-			window.x = 0;
-			window.y = 0;
-			window.show();
-
-			/* Initializing Layout */
-			var layout = new toolkit.Group;
-			window.add(layout);
-
-			/* Logo */
-			var logo = new toolkit.Text('糟糕圖');
-			logo.setFontName('Droid Sans 72');
-			logo.setColor(255, 255, 255, 255);
-			logo.setAnchorFromGravity(toolkit.GRAVITY_CENTER);
-			logo.x = window.width * 0.5;
-			logo.y = window.height * 0.5;
-			logo.scale(0.5, 0.5);
-			logo.opacity = 0;
-//			logo.rotate(0, toolkit.GRAVITY_CENTER);
-			layout.add(logo);
-
-			/* Animation */
-			logo.animate(toolkit.EASE_OUT_CUBIC, 1000, {
-				'scale-x': 1.0,
-				'scale-y': 1.0,
-				'opacity': 255
-			}, function() {
-				logo.animate(toolkit.EASE_OUT_CUBIC, 2000, {
-					'rotation-angle-y': 360
-				}, { loop: true });
-			});
+		/* Initailizing desktop */
+		var desktop = new Desktop(app, settings);
+		desktop.init(function(err) {
+			console.log('Initialized desktop');
 		});
 
 		/* Initailizing panel */
@@ -153,7 +112,6 @@ function initApplication(settings, callback) {
 
 					/* Initializing plugin */
 					var p = plugin.initPlugin(module);
-
 					var w = p.init(app, pluginConf);
 
 					frame.add(w);

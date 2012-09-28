@@ -1,4 +1,10 @@
 {
+	"desktop": {
+		"logo": {
+			"type": "text",
+			"value": "JUICE"
+		}
+	},
 	"plugins": [
 		{
 			"module": "clock",
@@ -8,10 +14,10 @@
 			"module": "volume"
 		},
 		{
-			"module": "systray"
+			"module": "powerstatus"
 		},
 		{
-			"module": "powerstatus"
+			"module": "systray"
 		},
 		{
 			"module": "network",
