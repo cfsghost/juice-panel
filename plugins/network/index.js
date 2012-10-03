@@ -15,6 +15,9 @@ var Network = function() {
 		list: null,
 		services: [],
 		security: {
+			dialog: null,
+			connect_button: null,
+			cancel_button: null,
 			layout: null,
 			passphrase_layout: null,
 			passphrase_label: null,
@@ -211,7 +214,7 @@ Network.prototype.updateStatus = function() {
 	}
 
 	if (!self.currentService) {
-		self.statusIcon.loadFile(__dirname + '/../data/nm-no-connection.png', updateIcon);
+		self.statusIcon.loadFile(self.app.pwd + '/data/nm-no-connection.png', updateIcon);
 
 		return;
 	}
@@ -220,12 +223,12 @@ Network.prototype.updateStatus = function() {
 	case 'wifi':
 
 		/* Get Strength to update icon */
-		Network.updateStrength(self.statusIcon, self.currentService[1].Strength, updateIcon);
+		self.updateStrength(self.statusIcon, self.currentService[1].Strength, updateIcon);
 
 		break;
 
 	case 'ethernet':
-		self.statusIcon.loadFile(__dirname + '/../data/nm-adhoc.png', updateIcon);
+		self.statusIcon.loadFile(self.app.pwd + '/data/nm-adhoc.png', updateIcon);
 
 		break;
 	}
@@ -248,6 +251,8 @@ Network.prototype.setSpinner = function(enabled) {
 Network.prototype.onClick = function() {
 	var self = this;
 
+	self.app.sound.trigger('tick');
+
 	function updateMenu(layout) {
 
 		/* Clear */
@@ -260,8 +265,11 @@ Network.prototype.onClick = function() {
 		self.connman.Wifi.Scan(function() {
 			self.connman.Wifi.ListAPs(function(list) {
 
-				for (var index in list) {
-					var ap = list[index];
+				function _next(index, arr) {
+					if (index == arr.length)
+						return;
+
+					var ap = arr[index];
 					var isUsed = false;
 					if (self.currentService)
 						isUsed = (self.currentService[0] == ap.dbusObject) ? true : false;
@@ -272,6 +280,7 @@ Network.prototype.onClick = function() {
 //					box.height = 48;
 					box.className = 'menu-item';
 					box.reactive = true;
+					box.hide();
 
 					/* Click */
 					(function(ap) {
@@ -283,7 +292,7 @@ Network.prototype.onClick = function() {
 
 					var used = new toolkit.Widget.Image;
 					if (isUsed) {
-						used.loadFile(__dirname + '/../data/used.png');
+						used.loadFile(self.app.pwd + '/data/used.png');
 					}
 					used.width = 24;
 					used.height = 24;
@@ -291,14 +300,14 @@ Network.prototype.onClick = function() {
 
 					var security = new toolkit.Widget.Image;
 					if (ap.Security != 'none') {
-						security.loadFile(__dirname + '/../data/locked.png');
+						security.loadFile(self.app.pwd + '/data/locked.png');
 					}
 					security.width = 24;
 					security.height = 24;
 					box.add(security);
 					
 					var strength = new toolkit.Widget.Image;
-					Network.updateStrength(strength, ap.Strength);
+					self.updateStrength(strength, ap.Strength);
 					box.add(strength);
 
 					var ssid = new toolkit.Widget.Label();
@@ -315,7 +324,19 @@ Network.prototype.onClick = function() {
 					layout.add(box);
 
 					self.menu.services.push(box);
+
+					box.show();
+
+					setTimeout(function() {
+						self.app.sound.trigger('dataTick');
+						_next(index + 1, arr);
+					}, 50);
 				}
+
+				_next(0, list);
+
+//				list.forEach(function(element, index, arr) {
+//				});
 			});
 		});
 	}
@@ -328,7 +349,8 @@ Network.prototype.onClick = function() {
 			updateMenu(self.menu.list);
 
 			self.menu.window.width = 240;
-			self.menu.window.height = 320;
+			//self.menu.window.height = 320;
+			self.menu.window.height = self.display.getScreenHeight() - self.app.getWidgetById('panel').height;
 			self.menu.window.show();
 		}
 	} else {
@@ -338,12 +360,12 @@ Network.prototype.onClick = function() {
 
 			window.windowType = toolkit.WINDOW_TYPE_POPUP_MENU;
 //			window.hasDecorator = false;
-			window.setColor(2, 17, 18, 100);
-			window.useAlpha = false;
+			window.setColor(2, 17, 18, 220);
+			window.useAlpha = true;
 			window.x = 0;
 			window.y = self.app.getWidgetById('panel').height;
 			window.width = 240;
-			window.height = 320;
+			window.height = self.display.getScreenHeight() - self.app.getWidgetById('panel').height;
 			window.show();
 
 			/* Initializing layout */
@@ -381,19 +403,78 @@ Network.prototype.connectAccessPoint = function(ap) {
 		return;
 	}
 
+	if (self.menu.security.dialog) {
+		self.menu.security.dialog.show();
+		self.menu.security.passphrase_entry.focus();
+
+		self.app.sound.trigger('layerTick');
+
+		return;
+	}
+
 	/* Create dialog for security */
 	self.app.createWindow(function(window) {
+		self.menu.security.dialog = window;
+
+//		window.windowType = toolkit.WINDOW_TYPE_POPUP_MENU;
 		window.title = 'Access Point Authorization';
-		window.setAnchorFromGravity(toolkit.GRAVITY_CENTER);
+		window.hasDecorator = false;
+//		window.setAnchorFromGravity(toolkit.GRAVITY_CENTER);
+		window.useAlpha = true;
+		window.setColor(2, 17, 18, 200);
 		window.width = 480;
 		window.height = 320;
 		window.x = (self.display.getScreenWidth() - window.width) * 0.5;
 		window.y = (self.display.getScreenHeight() - window.height) * 0.5;
 		window.show();
 
+		var form = new toolkit.Group;
+		window.add(form);
+
+		var message = new toolkit.Widget.Label('Require authorization, please type the passphrase.');
+		message.x = 50;
+		message.y = 100;
+		form.add(message);
+
+		var passphrase_entry = self.menu.security.passphrase_entry = new toolkit.Widget.Entry;
+		//var passphrase_entry = self.menu.security.passphrase_entry = new toolkit.Text;
+		passphrase_entry.className = 'entry';
+		passphrase_entry.y = 150;
+		passphrase_entry.width = window.width;
+		passphrase_entry.height = 60;
+		form.add(passphrase_entry);
+		passphrase_entry.focus();
+
+		var connect_button = self.menu.security.connect_button = new toolkit.Widget.Button('Connect');
+		connect_button.width = 120;
+		connect_button.height = 60;
+		connect_button.x = window.width - 120;
+		connect_button.y = window.height - 60;
+		connect_button.on('click', function() {
+			self.app.sound.trigger('tick');
+//			self.connman.Wifi.Connect(ap.Name);
+			console.log(ap.Name);
+			self.menu.security.dialog.hide();
+		});
+		form.add(connect_button);
+
+		var cancel_button = self.menu.security.cancel_button = new toolkit.Widget.Button('Cancel');
+		cancel_button.width = 120;
+		cancel_button.height = 60;
+		cancel_button.x = window.width - 240;
+		cancel_button.y = window.height - 60;
+		form.add(cancel_button);
+		cancel_button.on('click', function() {
+			self.menu.security.dialog.hide();
+		});
+
+		self.app.sound.trigger('layerTick');
+
+		return;
+
 		/* Container */
 		var frame = new toolkit.Widget.Frame;
-		frame.className = 'dialog';
+//		frame.className = 'dialog';
 		window.add(frame);
 		
 		/* Input box */
@@ -410,23 +491,27 @@ Network.prototype.connectAccessPoint = function(ap) {
 		passphrase_entry.width = 200;
 		passphrase_layout.add(passphrase_entry);
 		passphrase_layout.setExpand(passphrase_entry, true);
+		passphrase_entry.focus();
+
+		window.focus();
 	});
 };
 
 /* Internal Functions */
-Network.updateStrength = function(widget, strength, callback) {
+Network.prototype.updateStrength = function(widget, strength, callback) {
+	var self = this;
 
 	/* Get Strength to update icon */
 	if (strength > 80)
-		widget.loadFile(__dirname + '/../data/nm-signal-100.png', callback);
+		widget.loadFile(self.app.pwd + '/data/nm-signal-100.png', callback);
 	else if (strength > 60)
-		widget.loadFile(__dirname + '/../data/nm-signal-75.png', callback);
+		widget.loadFile(self.app.pwd + '/data/nm-signal-75.png', callback);
 	else if (strength > 40)
-		widget.loadFile(__dirname + '/../data/nm-signal-50.png', callback);
+		widget.loadFile(self.app.pwd + '/data/nm-signal-50.png', callback);
 	else if (strength > 20)
-		widget.loadFile(__dirname + '/../data/nm-signal-25.png', callback);
+		widget.loadFile(self.app.pwd + '/data/nm-signal-25.png', callback);
 	else
-		widget.loadFile(__dirname + '/../data/nm-signal-00.png', callback);
+		widget.loadFile(self.app.pwd + '/data/nm-signal-00.png', callback);
 };
 
 module.exports = {

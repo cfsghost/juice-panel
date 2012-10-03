@@ -2,11 +2,12 @@ var toolkit = require('jsdx-toolkit');
 var Display = require('jsdx-display');
 
 var Config = require('./lib/config');
+var Sound = require('./lib/sound');
 var Desktop = require('./lib/desktop');
 var Plugin = require('./lib/plugin');
 
 /* Initializing */
-//toolkit.useARGB(true);
+toolkit.useARGB(true);
 
 /* Global variable */
 var application = null;
@@ -28,8 +29,10 @@ function initApplication(settings, callback) {
 
 		/* Initializing application */
 		var app = new toolkit.Application('Juice Panel');
+		app.pwd = __dirname;
 		app.loadStyleFile(__dirname + '/data/default.css');
 		app.curPlugins = [];
+		app.sound = new Sound;
 		app.run();
 
 		/* Initailizing desktop */
@@ -124,7 +127,7 @@ function initApplication(settings, callback) {
 		});
 
 		process.on('uncaughtException', function(err) {
-			console.err(err.stack);
+			console.log(err.stack);
 
 			uninitApplication();
 		});

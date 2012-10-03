@@ -22,6 +22,13 @@ MxLabel {
 MxEntry {
 	padding: 5;
 	font-size: 16px;
+	border-image: none;
+	color: #ffffff;
+	background-color: #00000099;
+}
+
+MxEntry:focus {
+	border-image: none;
 }
 
 *.network_passphrase_label {
