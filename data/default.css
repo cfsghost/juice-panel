@@ -34,3 +34,7 @@ MxEntry:focus {
 *.network_passphrase_label {
 	padding: 5;
 }
+
+*.network_dialog_action_message {
+	font-size: 24px;
+}

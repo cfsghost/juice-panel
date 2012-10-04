@@ -2,6 +2,8 @@ var toolkit = require('jsdx-toolkit');
 var ConnMan = require('jsdx-connman');
 var Display = require('jsdx-display');
 
+var Wifi = require('./wifi');
+
 var Network = function() {
 	this.app = null;
 	this.connman = new ConnMan;
@@ -27,12 +29,15 @@ var Network = function() {
 	this.technologies = [];
 	this.statusIcon = null;
 	this.currentService = null;
+
+	this.wifi = null;
 };
 
 Network.prototype.init = function(app, settings) {
 	var self = this;
 
 	self.app = app;
+	self.wifi = new Wifi(app, self.connman);
 
 	this.widget = new toolkit.Widget.BoxLayout;
 	this.widget.orientation = toolkit.Widget.ORIENTATION_HORIZONTAL;
@@ -133,49 +138,6 @@ Network.prototype.init = function(app, settings) {
 
 Network.prototype.uninit = function() {
 	var self = this;
-};
-
-Network.prototype.configureWifi = function() {
-	var self = this;
-
-	self.connman.Agent.on('Release', function() {
-		console.log('Release');
-	});
-
-	self.connman.Agent.on('ReportError', function(path, err) {
-		console.log('ReportError:');
-		console.log(err);
-		/* invalid-key */
-	});
-
-	self.connman.Agent.on('RequestBrowser', function(path, url) {
-		console.log('RequestBrowser');
-	});
-
-	/* Initializing Agent for connectiing access point */
-	self.connman.Agent.on('RequestInput', function(path, dict) {
-		console.log(dict);
-
-		/* Peixin */
-		return { 'Passphrase': '12345' };
-
-/*
-		if ('Passphrase' in dict) {
-			if ('WPS' in dict) {
-				console.log('WPS');
-				return { 'WPS': '08152268' };
-			} else {
-				return { 'Passphrase': 'CPBAE187' };
-			}
-		}
-*/
-	});
-
-	self.connman.Agent.on('Cancel', function() {
-		console.log('Cancel');
-	});
-
-	self.connman.Agent.run();
 };
 
 Network.prototype.useWifi = function() {
@@ -285,7 +247,7 @@ Network.prototype.onClick = function() {
 					/* Click */
 					(function(ap) {
 						box.on('click', function() {
-							self.connectAccessPoint(ap);
+							self.wifi.connectAccessPoint(ap);
 							self.menu.window.hide();
 						});
 					}) (ap);
@@ -392,109 +354,6 @@ Network.prototype.onClick = function() {
 		});
 	}
 	
-};
-
-Network.prototype.connectAccessPoint = function(ap) {
-	var self = this;
-
-	/* Connect to access pointer right now */
-	if (ap.Security == 'none') {
-		self.connman.Wifi.ConnectService(ap.dbusObject);
-		return;
-	}
-
-	if (self.menu.security.dialog) {
-		self.menu.security.dialog.show();
-		self.menu.security.passphrase_entry.focus();
-
-		self.app.sound.trigger('layerTick');
-
-		return;
-	}
-
-	/* Create dialog for security */
-	self.app.createWindow(function(window) {
-		self.menu.security.dialog = window;
-
-//		window.windowType = toolkit.WINDOW_TYPE_POPUP_MENU;
-		window.title = 'Access Point Authorization';
-		window.hasDecorator = false;
-//		window.setAnchorFromGravity(toolkit.GRAVITY_CENTER);
-		window.useAlpha = true;
-		window.setColor(2, 17, 18, 200);
-		window.width = 480;
-		window.height = 320;
-		window.x = (self.display.getScreenWidth() - window.width) * 0.5;
-		window.y = (self.display.getScreenHeight() - window.height) * 0.5;
-		window.show();
-
-		var form = new toolkit.Group;
-		window.add(form);
-
-		var message = new toolkit.Widget.Label('Require authorization, please type the passphrase.');
-		message.x = 50;
-		message.y = 100;
-		form.add(message);
-
-		var passphrase_entry = self.menu.security.passphrase_entry = new toolkit.Widget.Entry;
-		//var passphrase_entry = self.menu.security.passphrase_entry = new toolkit.Text;
-		passphrase_entry.className = 'entry';
-		passphrase_entry.y = 150;
-		passphrase_entry.width = window.width;
-		passphrase_entry.height = 60;
-		form.add(passphrase_entry);
-		passphrase_entry.focus();
-
-		var connect_button = self.menu.security.connect_button = new toolkit.Widget.Button('Connect');
-		connect_button.width = 120;
-		connect_button.height = 60;
-		connect_button.x = window.width - 120;
-		connect_button.y = window.height - 60;
-		connect_button.on('click', function() {
-			self.app.sound.trigger('tick');
-//			self.connman.Wifi.Connect(ap.Name);
-			console.log(ap.Name);
-			self.menu.security.dialog.hide();
-		});
-		form.add(connect_button);
-
-		var cancel_button = self.menu.security.cancel_button = new toolkit.Widget.Button('Cancel');
-		cancel_button.width = 120;
-		cancel_button.height = 60;
-		cancel_button.x = window.width - 240;
-		cancel_button.y = window.height - 60;
-		form.add(cancel_button);
-		cancel_button.on('click', function() {
-			self.menu.security.dialog.hide();
-		});
-
-		self.app.sound.trigger('layerTick');
-
-		return;
-
-		/* Container */
-		var frame = new toolkit.Widget.Frame;
-//		frame.className = 'dialog';
-		window.add(frame);
-		
-		/* Input box */
-		var passphrase_layout = new toolkit.Widget.BoxLayout;
-		passphrase_layout.orientation = toolkit.Widget.ORIENTATION_HORIZONTAL;
-		frame.add(passphrase_layout);
-
-		var passphrase_label = new toolkit.Widget.Label('Passphrase:');
-		passphrase_label.className = 'network_passphrase_label';
-		passphrase_layout.add(passphrase_label);
-		passphrase_layout.setExpand(passphrase_label, true);
-
-		var passphrase_entry = new toolkit.Widget.Entry;
-		passphrase_entry.width = 200;
-		passphrase_layout.add(passphrase_entry);
-		passphrase_layout.setExpand(passphrase_entry, true);
-		passphrase_entry.focus();
-
-		window.focus();
-	});
 };
 
 /* Internal Functions */
