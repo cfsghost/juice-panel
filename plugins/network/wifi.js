@@ -220,41 +220,7 @@ Wifi.prototype.openAuthDialog = function(ap, complete) {
 		connect_button.x = window.width - 120;
 		connect_button.y = window.height - 60;
 		connect_button.on('click', function() {
-
-			self.authDialog.connectStatus = 'connecting';
-			self.authDialog.spinner.setAnimate(toolkit.ANIMATION_PLAY);
-			self.authDialog.actionMessage.text = 'Connecting';
-			self.authDialog.actionMessage.setAnimate(toolkit.ANIMATION_PLAY);
-			self.authDialog.state.setState('connecting');
-			self.app.sound.trigger('layerTick');
-			self.app.sound.trigger('connecting');
-
-			setTimeout(function() {
-				self.connman.Wifi.ConnectService(ap.dbusObject, function() {
-					if (self.authDialog.connectStatus != 'connecting') {
-
-						// Re-enter passphrase
-						setTimeout(function() {
-							self.authDialog.spinner.setAnimate(toolkit.ANIMATION_STOP);
-							self.authDialog.actionMessage.setAnimate(toolkit.ANIMATION_STOP);
-							self.authDialog.state.setState('prompt');
-							self.authDialog.passphrase_entry.focus();
-						}, 2000);
-
-						return;
-					}
-
-					// Connection was established
-					self.app.sound.trigger('accepted');
-					self.authDialog.actionMessage.text = 'Connection Accepted';
-
-					setTimeout(function() {
-						self.app.sound.trigger('layerTick');
-
-						self.authDialog.window.hide();
-					}, 2000);
-				});
-			}, 1000);
+			self._connectAccessPoint(ap);
 		});
 		form.add(connect_button);
 
@@ -309,42 +275,9 @@ Wifi.prototype.connectAccessPoint = function(ap) {
 	/* Connect to access pointer right now */
 	if (ap.Security == 'none' || ap.Favorite) {
 		self.openAuthDialog(ap, function() {
-			self.authDialog.connectStatus = 'connecting';
-			self.authDialog.spinner.setAnimate(toolkit.ANIMATION_PLAY);
-			self.authDialog.actionMessage.text = 'Connecting';
-			self.authDialog.actionMessage.setAnimate(toolkit.ANIMATION_PLAY);
-			self.authDialog.state.setState('connecting');
-			self.app.sound.trigger('layerTick');
-			self.app.sound.trigger('connecting');
-
-			setTimeout(function() {
-				self.connman.Wifi.ConnectService(ap.dbusObject, function() {
-					if (self.authDialog.connectStatus != 'connecting') {
-
-						// Re-enter passphrase
-						setTimeout(function() {
-							self.authDialog.spinner.setAnimate(toolkit.ANIMATION_STOP);
-							self.authDialog.actionMessage.setAnimate(toolkit.ANIMATION_STOP);
-							self.authDialog.state.setState('prompt');
-							self.authDialog.passphrase_entry.focus();
-						}, 2000);
-
-						return;
-					}
-
-					// Connection was established
-					self.app.sound.trigger('accepted');
-					self.authDialog.actionMessage.text = 'Connection Accepted';
-
-					setTimeout(function() {
-						self.app.sound.trigger('layerTick');
-
-						self.authDialog.window.hide();
-					}, 2000);
-				});
-			}, 1000);
-
+			self._connectAccessPoint(ap);
 		});
+
 		return;
 	}
 
@@ -354,4 +287,43 @@ Wifi.prototype.connectAccessPoint = function(ap) {
 		self.authDialog.state.setState('prompt');
 		self.authDialog.passphrase_entry.focus();
 	});
+};
+
+Wifi.prototype._connectAccessPoint = function(ap) {
+	var self = this;
+
+	self.authDialog.connectStatus = 'connecting';
+	self.authDialog.spinner.setAnimate(toolkit.ANIMATION_PLAY);
+	self.authDialog.actionMessage.text = 'Connecting';
+	self.authDialog.actionMessage.setAnimate(toolkit.ANIMATION_PLAY);
+	self.authDialog.state.setState('connecting');
+	self.app.sound.trigger('layerTick');
+	self.app.sound.trigger('connecting');
+
+	setTimeout(function() {
+		self.connman.Wifi.ConnectService(ap.dbusObject, function() {
+			if (self.authDialog.connectStatus != 'connecting') {
+
+				// Re-enter passphrase
+				setTimeout(function() {
+					self.authDialog.spinner.setAnimate(toolkit.ANIMATION_STOP);
+					self.authDialog.actionMessage.setAnimate(toolkit.ANIMATION_STOP);
+					self.authDialog.state.setState('prompt');
+					self.authDialog.passphrase_entry.focus();
+				}, 2000);
+
+				return;
+			}
+
+			// Connection was established
+			self.app.sound.trigger('accepted');
+			self.authDialog.actionMessage.text = 'Connection Accepted';
+
+			setTimeout(function() {
+				self.app.sound.trigger('layerTick');
+
+				self.authDialog.window.hide();
+			}, 2000);
+		});
+	}, 1000);
 };
