@@ -308,28 +308,30 @@ Wifi.prototype._connectAccessPoint = function(ap) {
 	setTimeout(function() {
 		self.connman.Wifi.ConnectService(ap.dbusObject, function() {
 
-			if (self.authDialog.connectStatus == 'invalid-key' || self.authDialog.connectStatus == 'connect-failed') {
+			process.nextTick(function() {
+				if (self.authDialog.connectStatus == 'invalid-key' || self.authDialog.connectStatus == 'connect-failed') {
 
-				// Re-enter passphrase
+					// Re-enter passphrase
+					setTimeout(function() {
+						self.authDialog.spinner.setAnimate(toolkit.ANIMATION_STOP);
+						self.authDialog.actionMessage.setAnimate(toolkit.ANIMATION_STOP);
+						self.authDialog.state.setState('prompt');
+						self.authDialog.passphrase_entry.focus();
+					}, 2000);
+
+					return;
+				}
+
+				// Connection was established
+				self.app.sound.trigger('accepted');
+				self.authDialog.actionMessage.text = 'Connection Accepted';
+
 				setTimeout(function() {
-					self.authDialog.spinner.setAnimate(toolkit.ANIMATION_STOP);
-					self.authDialog.actionMessage.setAnimate(toolkit.ANIMATION_STOP);
-					self.authDialog.state.setState('prompt');
-					self.authDialog.passphrase_entry.focus();
+					self.app.sound.trigger('layerTick');
+
+					self.authDialog.window.hide();
 				}, 2000);
-
-				return;
-			}
-
-			// Connection was established
-			self.app.sound.trigger('accepted');
-			self.authDialog.actionMessage.text = 'Connection Accepted';
-
-			setTimeout(function() {
-				self.app.sound.trigger('layerTick');
-
-				self.authDialog.window.hide();
-			}, 2000);
+			});
 		});
 	}, 1000);
 };
