@@ -40,6 +40,10 @@ Systray.prototype.init = function(app, settings) {
 		client.hide();
 
 		/* Pass through input event */
+		client.on('motion', function(e, data) {
+			self.systray.sendEvent(w, self.systray.EVENT_MOTION, data);
+		});
+
 		client.on('press', function(e, data) {
 			self.systray.sendEvent(w, self.systray.EVENT_BUTTON_PRESS, data);
 		});

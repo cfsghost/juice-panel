@@ -1,0 +1,12 @@
+#!/usr/bin/env node
+
+var JuicePanel = require('../lib/juice-panel');
+
+var configFile = null;
+
+if (process.argv.length == 3) {
+        if (process.argv[2])
+                configFile = process.argv[2];
+}
+
+JuicePanel.run(configFile);

@@ -322,7 +322,7 @@ Network.prototype.onClick = function() {
 
 			window.windowType = toolkit.WINDOW_TYPE_POPUP_MENU;
 //			window.hasDecorator = false;
-			window.setColor(2, 17, 18, 220);
+			window.setColor(2, 17, 18, 230);
 			window.useAlpha = true;
 			window.x = 0;
 			window.y = self.app.getWidgetById('panel').height;

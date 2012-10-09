@@ -58,7 +58,6 @@ Wifi.prototype.configureAuth = function() {
 	/* Initializing Agent for connectiing access point */
 	self.connman.Agent.on('RequestInput', function(path, dict) {
 		console.log(dict);
-		console.log('Passphrase is: ' + self.authDialog.passphrase_entry.text);
 
 		/* Peixin */
 		return { 'Passphrase': self.authDialog.passphrase_entry.text };
@@ -166,7 +165,7 @@ Wifi.prototype.openAuthDialog = function(ap, complete) {
 		window.hasDecorator = false;
 //		window.setAnchorFromGravity(toolkit.GRAVITY_CENTER);
 		window.useAlpha = true;
-		window.setColor(2, 17, 18, 200);
+		window.setColor(0, 0, 0, 0);
 		window.width = 480;
 		window.height = 320;
 		window.x = (self.display.getScreenWidth() - window.width) * 0.5;
@@ -175,6 +174,12 @@ Wifi.prototype.openAuthDialog = function(ap, complete) {
 
 		var container = self.authDialog.container = new toolkit.Group;
 		window.add(container);
+
+		// Background
+		var background = new toolkit.Rectangle(2, 17, 18, 230);
+		background.width = window.width;
+		background.height = window.height;
+		container.add(background);
 
 		// Initializing connecting dialog
 		connectingDialogInit(container);
@@ -240,10 +245,10 @@ Wifi.prototype.openAuthDialog = function(ap, complete) {
 		// Initializing state of UI
 		var state = self.authDialog.state = new toolkit.State(500);
 		state.set('prompt', [
-			[ self.authDialog.formTopLine, 'x', toolkit.EASE_OUT_QUINT, 0 ],
-			[ self.authDialog.formBottomLine, 'x', toolkit.EASE_OUT_QUINT, 0 ],
-			[ self.authDialog.connectingTopLine, 'x', toolkit.EASE_OUT_QUINT, -window.width ],
-			[ self.authDialog.connectingBottomLine, 'x', toolkit.EASE_OUT_QUINT, window.width ],
+			[ self.authDialog.formTopLine, 'x', toolkit.EASE_OUT_QUAD, 0 ],
+			[ self.authDialog.formBottomLine, 'x', toolkit.EASE_OUT_QUAD, 0 ],
+			[ self.authDialog.connectingTopLine, 'x', toolkit.EASE_OUT_QUAD, -window.width ],
+			[ self.authDialog.connectingBottomLine, 'x', toolkit.EASE_OUT_QUAD, window.width ],
 			[ self.authDialog.form, 'opacity', toolkit.EASE_OUT_CUBIC, 255 ],
 			[ self.authDialog.form, 'x', toolkit.EASE_OUT_CUBIC, 0 ],
 			[ self.authDialog.connectingLayer, 'opacity', toolkit.EASE_OUT_CUBIC, 0 ],
@@ -251,10 +256,10 @@ Wifi.prototype.openAuthDialog = function(ap, complete) {
 		]);
 
 		state.set('connecting', [
-			[ self.authDialog.formTopLine, 'x', toolkit.EASE_OUT_QUINT, -window.width ],
-			[ self.authDialog.formBottomLine, 'x', toolkit.EASE_OUT_QUINT, window.width ],
-			[ self.authDialog.connectingTopLine, 'x', toolkit.EASE_OUT_QUINT, 0 ],
-			[ self.authDialog.connectingBottomLine, 'x', toolkit.EASE_OUT_QUINT, 0 ],
+			[ self.authDialog.formTopLine, 'x', toolkit.EASE_OUT_QUAD, -window.width ],
+			[ self.authDialog.formBottomLine, 'x', toolkit.EASE_OUT_QUAD, window.width ],
+			[ self.authDialog.connectingTopLine, 'x', toolkit.EASE_OUT_QUAD, 0 ],
+			[ self.authDialog.connectingBottomLine, 'x', toolkit.EASE_OUT_QUAD, 0 ],
 			[ self.authDialog.form, 'opacity', toolkit.EASE_OUT_CUBIC, 0 ],
 			[ self.authDialog.form, 'x', toolkit.EASE_OUT_CUBIC, -window.width ],
 			[ self.authDialog.connectingLayer, 'opacity', toolkit.EASE_OUT_CUBIC, 255 ],
@@ -272,7 +277,7 @@ Wifi.prototype.openAuthDialog = function(ap, complete) {
 Wifi.prototype.connectAccessPoint = function(ap) {
 	var self = this;
 
-	/* Connect to access pointer right now */
+	/* Connect to access point right now */
 	if (ap.Security == 'none' || ap.Favorite) {
 		self.openAuthDialog(ap, function() {
 			self._connectAccessPoint(ap);
@@ -302,7 +307,8 @@ Wifi.prototype._connectAccessPoint = function(ap) {
 
 	setTimeout(function() {
 		self.connman.Wifi.ConnectService(ap.dbusObject, function() {
-			if (self.authDialog.connectStatus != 'connecting') {
+
+			if (self.authDialog.connectStatus == 'invalid-key' || self.authDialog.connectStatus == 'connect-failed') {
 
 				// Re-enter passphrase
 				setTimeout(function() {

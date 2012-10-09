@@ -33,5 +33,8 @@
 		"jsdx-soundman": ">= 0.0.1",
 		"dateformat": "*"
 	}
+	"bin": {
+		"jupanel": "./bin/jupanel"
+	},
 	"main": "./index.js"
 }
