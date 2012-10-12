@@ -1,12 +1,11 @@
 var toolkit = require('jsdx-toolkit');
-var Display = require('jsdx-display');
 
 var Wifi = module.exports = function(app, connman) {
 	var self = this;
 
 	self.app = app;
 	self.connman = connman;
-	self.display = new Display;
+	self.display = app.display;
 	self.authDialog = {
 		connectStatus: '',
 		state: null,

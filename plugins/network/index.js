@@ -1,13 +1,12 @@
 var toolkit = require('jsdx-toolkit');
 var ConnMan = require('jsdx-connman');
-var Display = require('jsdx-display');
 
 var Wifi = require('./wifi');
 
 var Network = function() {
 	this.app = null;
 	this.connman = new ConnMan;
-	this.display = new Display;
+	this.display = null;
 	this.widget = null;
 	this.spinner = null;
 	this.menu = {
@@ -37,6 +36,7 @@ Network.prototype.init = function(app, settings) {
 	var self = this;
 
 	self.app = app;
+	self.display = app.display;
 	self.wifi = new Wifi(app, self.connman);
 
 	this.widget = new toolkit.Widget.BoxLayout;
